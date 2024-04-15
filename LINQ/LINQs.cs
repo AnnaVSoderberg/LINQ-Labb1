@@ -159,6 +159,33 @@ namespace LINQ
             using LinqDbContext db = new LinqDbContext();
             Console.WriteLine("- - - - Uppdatera ett Student Record med Läraren Anas till Reidar - - - -");
 
+            var studToUpdate = db.TblStudents
+            .Include(s => s.Course)
+            .ThenInclude(c => c.Teachers)
+            .FirstOrDefault(s => s.Course.Teachers.Any(t => t.TeacherName == "Anas"));
+
+            if (studToUpdate != null)
+            {
+                var teacherToReplace = studToUpdate.Course.Teachers.FirstOrDefault(t => t.TeacherName == "Anas");
+                var newTeacher = db.TblTeachers.FirstOrDefault(t => t.TeacherName == "Reidar");
+
+                if (teacherToReplace != null && newTeacher != null)
+                {
+                    teacherToReplace.TeacherName = "Reidar";
+                    db.SaveChanges();
+
+                    Console.WriteLine($"Den första läraren med namnet Anas för {studToUpdate.StudentName} har uppdaterats till Reidar.");
+                }
+                else
+                {
+                    Console.WriteLine("Det gick inte att hitta Anas som lärare för den valda studenten eller Reidar som ny lärare.");
+                }
+            }
+            else
+            {
+                Console.WriteLine("Det finns ingen student med Anas som lärare.");
+            }
+
 
 
             Console.WriteLine("Tryck Enter för att komma tillbaka till menyn");
